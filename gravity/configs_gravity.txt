@@ -1,0 +1,43 @@
+
+-------------Espiral---------------
+friction = .8;
+update(blue, green, .8, 50, true);
+update(green, blue, -1, 50, true);
+update(red, green, -4, 30, true);
+update(green, red, .2, 40, true);
+----------------------------------
+
+--------------Zooide--------------
+int nR = 500;
+int nB = 20;
+int nG = 10;
+int nY = 0;
+friction = .5;
+update(red, red, 10, 50, true);
+update(red, blue, -500, 60, true);
+update(red, green, -200, 200, true);
+update(blue, red, 100, 50, true);
+update(blue, blue, -89, 100, true);
+update(green, red, 10, 20, true);
+---------------------------------
+
+-----------BattleField------------
+update(blue, blue, -100, 50, true);
+update(red, red, -100, 50, true);
+update(red, red, +200, 30, true);
+update(blue, blue, +200, 30, true);
+update(yellow, red, -200, 20, true);
+update(green, blue, -200, 20, true);
+update(red, green, +10000, 100, true);
+update(blue, yellow, +10000, 100, true);
+update(green, yellow, -10, 100, true);
+update(yellow, green, -10, 100, true);
+--------------------------------------
+
+
+update(red, red, 10, 50, true);
+  update(red, blue, -500, 60, true);
+  update(red, green, -200, 200, true);
+  update(blue, red, 100, 50, true);
+  update(blue, blue, -89, 100, true);
+  update(green, red, 10, 20, true);

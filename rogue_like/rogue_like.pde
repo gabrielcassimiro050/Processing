@@ -53,9 +53,16 @@ void mouseReleased(){
 }
 
 void updateBullets(){
+  int j = 0;
+  ArrayList<bullet> aux = new ArrayList<bullet>();
   for(bullet b : bullets){
-    if(b!=null) b.update();
+    if(b!=null){ 
+      b.update();
+      aux.add(b);
+      ++j;
+    }
   }
+  bullets = aux;
 }
 
 void showBullets(){

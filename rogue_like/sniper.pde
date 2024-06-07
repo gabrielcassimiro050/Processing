@@ -19,12 +19,12 @@ class sniper extends enemy {
       destiny = new PVector(player.pos.x, player.pos.y);
       bullet = new bullet(0, pos.x, pos.y, cos(atan2(destiny.y-pos.y, destiny.x-pos.x)), sin(atan2(destiny.y-pos.y, destiny.x - pos.x)), 5, false);
       recoil = new PVector(-cos(atan2(destiny.y-pos.y, destiny.x-pos.x)), -sin(atan2(destiny.y-pos.y, destiny.x - pos.x)));
-      nextPos = new PVector(pos.x+random(-100, 100), pos.y+random(-100, 100));
+      nextPos = new PVector(pos.x+random(-50, 50), pos.y+random(-50, 50));
       a = 0;
     } else {
       a-=1/(float)cooldown;
     }
-
+    
     PVector d = new PVector(nextPos.x-pos.x, nextPos.y-pos.y);
     acc.add(d.mult(1/(d.mag()+1)));
     vel.add(acc);

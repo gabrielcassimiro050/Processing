@@ -116,7 +116,7 @@ void addEnemy(int type, int n) {
   }
 }
 void setup() {
-  size(750, 750);
+  size(1200, 750);
   game = true;
   frictionAux = .9;
   friction = .9;

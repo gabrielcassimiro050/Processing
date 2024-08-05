@@ -15,6 +15,6 @@ class particle{
   void show(){ 
     noStroke();
     fill(c);
-    ellipse(p.x, p.y, 5, 5);
+    ellipse(p.x, p.y, radius, radius);
   }
 }

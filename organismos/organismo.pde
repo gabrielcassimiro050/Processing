@@ -13,9 +13,9 @@ class Organismo {
     this.dna = dna;
     pos = new PVector(x, y);
     vel = new PVector(random(-1, 1), random(-1, 1));
-    range = map(dna[0], 0, 1, 50, 250);
-    maxVel = map(dna[1], 0, 1, 1, 5);
-    size = map(dna[2], 0, 1, 5, 10);
+    range = map(dna[0], 0, 1, minOrganismRange, maxOrganismRange);
+    maxVel = map(dna[1], 0, 1, 1, 2);
+    size = map(dna[2], 0, 1, minOrganismSize, maxOrganismSize);
 
     life = size*10;
     diet = dna[3];
@@ -30,9 +30,9 @@ class Organismo {
     this.dna = dna;
     pos = new PVector(x, y);
     vel = new PVector(random(-1, 1), random(-1, 1));
-    range = map(dna[0], 0, 1, 50, 250);
-    maxVel = map(dna[1], 0, 1, 1, 5);
-    size = map(dna[2], 0, 1, 2, 15);
+    range = map(dna[0], 0, 1, minOrganismRange, maxOrganismRange);
+    maxVel = map(dna[1], 0, 1, 1, 2);
+    size = map(dna[2], 0, 1, minOrganismSize, maxOrganismSize);
     dna[3] = random(.49, 1);
     life = size*10;
     diet = dna[3];
@@ -40,18 +40,18 @@ class Organismo {
 
   void update() {
     acc = new PVector(0, 0);
-    acc.add(new PVector(random(-1, 1), random(-1, 1)));
+    acc.add(new PVector(random(-.1, .1), random(-.1, .1)));
     if (diet>=.5) {
-      for (int i = 0; i < food.size(); ++i) {
-        PVector f = food.get(i).pos;
-        if (dist(f, pos) < range && food.get(i).size<size) {
+      for (int i = 0; i < plant.size(); ++i) {
+        PVector f = plant.get(i).pos;
+        if (dist(f, pos) < range && plant.get(i).size<size) {
           acc = PVector.sub(f, pos);
         }
 
 
-        if (dist(f, pos) < size/2.0+food.get(i).size/2.0 && food.get(i).size<size) {
-          life += food.get(i).life*diet;
-          food.remove(i);
+        if (dist(f, pos) < size/2.0+plant.get(i).size/2.0 && plant.get(i).size<size) {
+          life += plant.get(i).life*diet;
+          plant.remove(i);
         }
       }
 
@@ -117,8 +117,8 @@ class Organismo {
     pos.x = (pos.x+vel.x+width)%width;
     pos.y = (pos.y+vel.y+height)%height;
 
-    if (diet>=.5) life -= maxVel*size/20.0;
-    else  life -= maxVel*size/25.0;
+    if (diet>=.5) life -= maxVel*pow(2, size*temperature[floor(pos.x)][floor(pos.y)])/20.0;
+    else  life -= maxVel*pow(2, size*temperature[floor(pos.x)][floor(pos.y)])/25.0;
 
     life = constrain(life, 0, 100);
     reproduce();

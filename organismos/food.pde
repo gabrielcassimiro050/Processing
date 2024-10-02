@@ -58,9 +58,9 @@ class Plant {
 
 
     //c = color(constrain(red(c)+random(-5, 5), 0, 255), constrain(green(c)+random(-5, 5), 0, 255), constrain(blue(c)+random(-5, 5), 0, 255));
-    this.dna.put("r", constrain(dna.get("r")+(random(1)<mutationRate ? random(-.01, .01) : 0), 0, 1));
-    this.dna.put("g", constrain(dna.get("g")+(random(1)<mutationRate ? random(-.01, .01) : 0), 0, 1));
-    this.dna.put("b", constrain(dna.get("b")+(random(1)<mutationRate ? random(-.01, .01) : 0), 0, 1));
+    this.dna.put("r", constrain(dna.get("r")+(random(1)<mutationRate ? random(-.001, .001) : 0), 0, 1));
+    this.dna.put("g", constrain(dna.get("g")+(random(1)<mutationRate ? random(-.001, .001) : 0), 0, 1));
+    this.dna.put("b", constrain(dna.get("b")+(random(1)<mutationRate ? random(-.001, .001) : 0), 0, 1));
 
     float r = map(this.dna.get("r"), 0, 1, 0, 255);
     float g = map(this.dna.get("g"), 0, 1, 0, 255);
@@ -89,43 +89,72 @@ class Plant {
 
     println(lightFactor);
 
-    life -= (pow(2, size*temperature[floor(pos.x)][floor(pos.y)]));
+    life -= (pow(2, size/map(temperature[floor(pos.x)][floor(pos.y)], 0, 1, 0, 2)*map(umidity[floor(pos.x)][floor(pos.y)], 0, 1, 0, 2)))*age/ageExpectancy;
     life += size*lightFactor;
 
     for (int i = 0; i < plant.size(); ++i) {
       Plant f = plant.get(i);
       if (dist(f.pos, pos) < range && dist(f.pos, pos) < f.range) {
-        if (random(1) < .01 && life >= map(size, 1, 5, 50, 100)*1.5 && f.life >= map(f.size, 1, 5, 50, 100)*1.5) {
+        if (random(1) < .01 && life >= map(size, 1, 5, 50, 100)*1.5 && f.life >= map(f.size, 1, 5, 50, 100)*1.5 && age>ageExpectancy/2.0 && f.age>f.ageExpectancy/2.0) {
           f.life-=f.size*3;
-          reproduce();
+          reproduce(f);
         }
       }
     }
 
-    if (random(1) < .0001) reproduce();
+    if (random(1) < .0001) reproduce(this);
 
     life = constrain(life, 0, map(dna.get("size"), 0, 1, 100, 500));
 
     if (life<=0) plant.remove(plant.indexOf(this));
-    ++age;
+    age+=.1;
   }
 
-  void reproduce() {
-    life-=size/10.0;
+  void reproduce(Plant parent) {
+    if (parent==this) {
+      life-=size/10.0;
 
-    float x = (pos.x+random(-range, range)+width)%width;
-    float y = (pos.y+random(-range, range)+height)%height;
-    boolean growth = true;
-    
-    loadPixels();
-    if(pixels[floor(x)+floor(y)%width] != #11343E) growth = false;
-    
-    if(growth) plant.add(new Plant(x, y, dna));
+      float x = (pos.x+random(-range, range)+width)%width;
+      float y = (pos.y+random(-range, range)+height)%height;
+      boolean growth = true;
+
+      loadPixels();
+
+      if (pixels[floor(x)+floor(y)%width] != #11343E) growth = false;
+
+      if (growth) plant.add(new Plant(x, y, dna));
+    }else{
+      HashMap<String, Float> newDna = new HashMap<String, Float>();
+      Plant father, mother;
+      if(random(1)>.5){
+        father = this;
+        mother = parent;
+      }else{
+        father = parent;
+        mother = this;
+      }
+      
+      newDna.put("size", random(1) > .5 ? mother.dna.get("size") : father.dna.get("size")); 
+      newDna.put("range", random(1) > .5 ? mother.dna.get("range") : father.dna.get("range")); 
+      newDna.put("r", random(1) > .5 ? mother.dna.get("r") : father.dna.get("r")); 
+      newDna.put("g", random(1) > .5 ? mother.dna.get("g") : father.dna.get("g")); 
+      newDna.put("b", random(1) > .5 ? mother.dna.get("b") : father.dna.get("b")); 
+      
+      float x = (pos.x+random(-range, range)+width)%width;
+      float y = (pos.y+random(-range, range)+height)%height;
+      boolean growth = true;
+
+      loadPixels();
+
+      if (pixels[floor(x)+floor(y)%width] != #11343E) growth = false;
+
+      if (growth) plant.add(new Plant(x, y, newDna));
+    }
   }
 
   void show() {
     noStroke();
     fill(c);
-    ellipse(pos.x, pos.y, size, size);
+    ellipse(pos.x+offset.x, pos.y+offset.y, size, size);
   }
 }

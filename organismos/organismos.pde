@@ -6,9 +6,9 @@ float minPlantRange = 20, maxPlantRange = 100;
 float minPlantLife = 50, maxPlantLife = 200;
 float minPlantAge = 50, maxPlantAge = 150;
 
-float minOrganismSize = 3, maxOrganismSize = 10;
+float minOrganismSize = 3, maxOrganismSize = 15;
 float minOrganismRange = 20, maxOrganismRange = 100;
-
+float minOrganismAge = 50, maxOrganismAge = 150;
 
 
 ArrayList<Integer> populationData;
@@ -24,11 +24,17 @@ int nPlant = 500;
 int time;
 int maxOrganisms = 1000;
 
-color lightSpectrum = color(0, 200, 0);
-float lightIntolerance = 1.5;
+color lightSpectrum = color(255, 0, 255);
+float lightIntolerance = 3.5;
 
 float mutationRate = .0001;
 float mutationFactor = 1;
+
+PVector offset;
+PVector previousMouse;
+
+int indexOrganism;
+boolean focus;
 
 float dist(PVector p1, PVector p2) {
   return dist(p1.x, p1.y, p2.x, p2.y);
@@ -118,7 +124,21 @@ void showTemp() {
 void showUmid() {
   for (int x = 0; x < width; ++x) {
     for (int y = 0; y < height; ++y) {
-      fill(lerpColor(#0000FF, #86FFFE, umidity[x][y]));
+      float groupingValue = 16;
+      color pix = 255;
+
+      
+        pix = lerpColor(255, #3CBFE5, map(umidity[x][y], 0, .5, 0, 1));
+      
+
+
+      float r = red(pix), g = green(pix), b = blue(pix);
+      r = round(groupingValue*r/255)*(255/groupingValue);
+      g = round(groupingValue*g/255)*(255/groupingValue);
+      b = round(groupingValue*b/255)*(255/groupingValue);
+
+
+      fill(color(r, g, b));
       rect(x, y, 1, 1);
     }
   }
@@ -149,14 +169,24 @@ void keyReleased() {
   case 'u':
     if (umidIsOpen) umidIsOpen = false;
     else umidIsOpen = true;
-
     break;
+  case 'r':
+    indexOrganism = floor(random(organisms.size()));
+    focus = true;
+    break;
+  }
+
+  if (keyCode == ENTER) {
+    setup();
   }
 }
 
+void mousePressed() {
+  previousMouse = new PVector(mouseX, mouseY);
+}
 
 void mouseReleased() {
-  setup();
+  previousMouse = new PVector(mouseX, mouseY);
 }
 
 void setup() {
@@ -164,40 +194,42 @@ void setup() {
   populationData = new ArrayList<Integer>();
   plantData = new ArrayList<Integer>();
   setplant();
-  setOrganisms(50);
+  setOrganisms(0);
   tempSeed = random(10000);
   umidSeed = random(10000);
   setAmbient();
+  offset = new PVector(0, 0);
   time = 0;
 }
 
 void draw() {
   background(#11343E);
-  
+
   if (tempIsOpen) showTemp();
   if (umidIsOpen) showUmid();
-  
+
   showOrganisms();
   updateOrganisms();
   showplant();
   updateplant();
-  
+
   //if (time%100==0) growplant();
-  surface.setTitle("População: "+organisms.size());
+  surface.setTitle("Organismos: "+organisms.size()+" --- Plantas: "+plant.size());
 
   if (time%1==0) {
     populationData.add(organisms.size());
     plantData.add(plant.size());
   }
-  
+
   if (organisms.size()+plant.size()<=1) setup();
-  
-  if(time%100 == 0){
+
+  if (time%100 == 0) {
     tempSeed += random(-.1, .1);
     umidSeed += random(-.1, .1);
     setAmbient();
   }
-
+  if (mousePressed) offset.add(PVector.sub(new PVector(mouseX, mouseY), previousMouse).normalize().mult(15));
+  
   if (menuIsOpen) showGraph();
   ++time;
 }

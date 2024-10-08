@@ -2,9 +2,10 @@ ArrayList<Plant> plant;
 ArrayList<Organismo> organisms;
 
 float minPlantSize = 3, maxPlantSize = 10;
-float minPlantRange = 20, maxPlantRange = 100;
+float minPlantRange = 100, maxPlantRange = 250;
 float minPlantLife = 50, maxPlantLife = 200;
 float minPlantAge = 50, maxPlantAge = 150;
+float plantCompatibility = 4;
 
 float minOrganismSize = 3, maxOrganismSize = 15;
 float minOrganismRange = 20, maxOrganismRange = 100;
@@ -13,19 +14,20 @@ float minOrganismAge = 50, maxOrganismAge = 150;
 
 ArrayList<Integer> populationData;
 ArrayList<Integer> plantData;
-boolean menuIsOpen, tempIsOpen, umidIsOpen;
+boolean menuIsOpen, tempIsOpen, umidIsOpen, plantRange;
 
 float tempSeed = random(100000);
 float umidSeed = random(100000);
 float[][] temperature, umidity;
 float scl = .005;
 
-int nPlant = 500;
+int nPlant = 1000;
 int time;
 int maxOrganisms = 1000;
 
 color lightSpectrum = color(255, 0, 255);
-float lightIntolerance = 3.5;
+float lightIntolerance = 2;
+float fertilityFactor = .01;
 
 float mutationRate = .0001;
 float mutationFactor = 1;
@@ -33,7 +35,9 @@ float mutationFactor = 1;
 PVector offset;
 PVector previousMouse;
 
-int indexOrganism;
+Plant plantSelected;
+float plantLife, plantAge;
+
 boolean focus;
 
 float dist(PVector p1, PVector p2) {
@@ -127,9 +131,9 @@ void showUmid() {
       float groupingValue = 16;
       color pix = 255;
 
-      
-        pix = lerpColor(255, #3CBFE5, map(umidity[x][y], 0, .5, 0, 1));
-      
+
+      pix = lerpColor(255, #3CBFE5, map(umidity[x][y], 0, .5, 0, 1));
+
 
 
       float r = red(pix), g = green(pix), b = blue(pix);
@@ -141,6 +145,48 @@ void showUmid() {
       fill(color(r, g, b));
       rect(x, y, 1, 1);
     }
+  }
+}
+
+void showPlantProfile() {
+  rectMode(CORNER);
+  if (plantSelected!=null) {
+    //plantSelected = plant.get(indexPlant);
+    
+    fill(255);
+    rect(-width/10.0, -height/10.0, width/3.0, height*2, 10);
+    fill(#11343E);
+    rect(width/18.0, height/10.0, width/8.0, height/3.3, 10);
+
+    fill(plantSelected.c);
+    ellipse(width/8.5, height/4.0, plantSelected.size*10, plantSelected.size*10);
+
+    fill(0);
+    text("Size: ", width/18.0, height/2.0);
+    text(nf(plantSelected.dna.get("size"), 1, 2)+" --- "+nf(plantSelected.size, 1, 2), width/10.0, height/2.0);
+
+    text("Range: ", width/18.0, height/1.85);
+    text(nf(plantSelected.dna.get("range"), 1, 2)+" --- "+nf(plantSelected.range, 1, 2), width/10.0, height/1.85);
+
+    text("R: ", width/18.0, height/1.60);
+    text(nf(plantSelected.dna.get("r"), 1, 2)+" --- "+red(plantSelected.c), width/10.0, height/1.60);
+
+    text("G: ", width/18.0, height/1.50);
+    text(nf(plantSelected.dna.get("g"), 1, 2)+" --- "+green(plantSelected.c), width/10.0, height/1.50);
+
+    text("B: ", width/18.0, height/1.40);
+    text(nf(plantSelected.dna.get("b"), 1, 2)+" --- "+blue(plantSelected.c), width/10.0, height/1.40);
+        
+    text("Age: ", width/18.0, height/1.30);
+    text(nf(plantAge, 1, 2), width/10.0, height/1.30);
+    
+    text("Age Expected: ", width/18.0, height/1.25);
+    text(nf(map(plantSelected.dna.get("size"), 0, 1, minPlantAge, maxPlantAge), 1, 2), width/7.0, height/1.25);
+    
+    
+
+    fill(plantSelected.c);
+    rect(width/18.0, height/1.2, width/8.0*(plantLife/map(plantSelected.dna.get("size"), 0, 1, minPlantLife, maxPlantLife)), height/3.3, 10);
   }
 }
 
@@ -164,14 +210,17 @@ void keyReleased() {
   case 't':
     if (tempIsOpen) tempIsOpen = false;
     else tempIsOpen = true;
-
     break;
   case 'u':
     if (umidIsOpen) umidIsOpen = false;
     else umidIsOpen = true;
     break;
+  case 'p':
+    if (plantRange) plantRange = false;
+    else plantRange = true;
+    break;
   case 'r':
-    indexOrganism = floor(random(organisms.size()));
+    //indexOrganism = floor(random(organisms.size()));
     focus = true;
     break;
   }
@@ -181,12 +230,13 @@ void keyReleased() {
   }
 }
 
-void mousePressed() {
-  previousMouse = new PVector(mouseX, mouseY);
-}
-
 void mouseReleased() {
-  previousMouse = new PVector(mouseX, mouseY);
+  for (Plant p : plant) {
+    if (dist(new PVector(mouseX, mouseY), p.pos) < p.size) {
+      plantSelected = (Plant)p.clone();
+      p.selected = true;
+    }
+  }
 }
 
 void setup() {
@@ -228,8 +278,11 @@ void draw() {
     umidSeed += random(-.1, .1);
     setAmbient();
   }
-  if (mousePressed) offset.add(PVector.sub(new PVector(mouseX, mouseY), previousMouse).normalize().mult(15));
-  
+
+  showPlantProfile();
+
+
+
   if (menuIsOpen) showGraph();
   ++time;
 }

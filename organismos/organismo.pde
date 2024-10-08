@@ -56,7 +56,7 @@ class Organismo {
 
         if (dist(f, pos) < size/2.0+plant.get(i).size/2.0 && plant.get(i).size<size) {
           life += plant.get(i).life*diet;
-          plant.remove(i);
+          plant.get(i).plantDied();
         }
       }
       

@@ -11,7 +11,10 @@ class Plant {
   HashMap<String, Float> dna;
 
   boolean selected;
-
+  
+  int generation;
+  boolean asexual;
+  
   Plant(float x, float y) {
     dna = new HashMap<String, Float>();
 
@@ -42,29 +45,30 @@ class Plant {
     life = map(dna.get("size"), 0, 1, minPlantLife, maxPlantLife);
     ageExpectancy = map(dna.get("size"), 0, 1, minPlantAge, maxPlantAge);
 
-    
+    generation = 0;
+    asexual = true;
   }
 
 
-  Plant(float x, float y, HashMap<String, Float> dna) {
+  Plant(float x, float y, HashMap<String, Float> dna, int generation, boolean asexual) {
     this.dna = new HashMap<String, Float>();
 
 
 
     pos = new PVector(x, y);
 
-    this.dna.put("size", constrain(dna.get("size") + (random(1) < mutationRate ? random(-.01, .01) : 0), 0, 1));
+    this.dna.put("size", constrain(dna.get("size") + (random(1) < mutationRate ? random(-plantMutationFactor, plantMutationFactor) : 0), 0, 1));
     size = map(dna.get("size"), 0, 1, minPlantSize, maxPlantSize);
 
-    this.dna.put("range", constrain(dna.get("range") + (random(1)<mutationRate ? random(-.01, .01) : 0), 0, 1));
+    this.dna.put("range", constrain(dna.get("range") + (random(1)<mutationRate ? random(-plantMutationFactor, plantMutationFactor) : 0), 0, 1));
     range = map(dna.get("range"), 0, 1, minPlantRange, maxPlantRange);
 
 
 
     //c = color(constrain(red(c)+random(-5, 5), 0, 255), constrain(green(c)+random(-5, 5), 0, 255), constrain(blue(c)+random(-5, 5), 0, 255));
-    this.dna.put("r", constrain(dna.get("r")+(random(1)<mutationRate ? random(-.001, .001) : 0), 0, 1));
-    this.dna.put("g", constrain(dna.get("g")+(random(1)<mutationRate ? random(-.001, .001) : 0), 0, 1));
-    this.dna.put("b", constrain(dna.get("b")+(random(1)<mutationRate ? random(-.001, .001) : 0), 0, 1));
+    this.dna.put("r", constrain(dna.get("r")+(random(1)<mutationRate ? random(-plantMutationFactor, plantMutationFactor) : 0), 0, 1));
+    this.dna.put("g", constrain(dna.get("g")+(random(1)<mutationRate ? random(-plantMutationFactor, plantMutationFactor) : 0), 0, 1));
+    this.dna.put("b", constrain(dna.get("b")+(random(1)<mutationRate ? random(-plantMutationFactor, plantMutationFactor) : 0), 0, 1));
 
     float r = map(this.dna.get("r"), 0, 1, 0, 255);
     float g = map(this.dna.get("g"), 0, 1, 0, 255);
@@ -75,7 +79,8 @@ class Plant {
     life = map(dna.get("size"), 0, 1, minPlantLife, maxPlantLife);
     ageExpectancy = map(dna.get("size"), 0, 1, minPlantAge, maxPlantAge);
 
-    
+    this.generation = generation+1;    
+    asexual = false;
   }
 
   float checkDna(HashMap<String, Float> dna) {
@@ -98,7 +103,7 @@ class Plant {
     dna.put("r", this.dna.get("r"));
     dna.put("g", this.dna.get("g"));
     dna.put("b", this.dna.get("b"));
-    return new Plant(pos.x, pos.y, dna);
+    return new Plant(pos.x, pos.y, dna, generation, asexual);
   }
 
   void update() {
@@ -167,7 +172,7 @@ class Plant {
 
       if (pixels[floor(x)+floor(y)%width] != #11343E) growth = false;
 
-      if (growth) plant.add(new Plant(x, y, dna));
+      if (growth) plant.add(new Plant(x, y, dna, generation, true));
     } else {
       HashMap<String, Float> newDna = new HashMap<String, Float>();
       Plant father, mother;
@@ -193,7 +198,7 @@ class Plant {
 
       if (pixels[floor(x)+floor(y)%width] != #11343E) growth = false;
 
-      if (growth) plant.add(new Plant(x, y, newDna));
+      if (growth) plant.add(new Plant(x, y, newDna, generation, false));
     }
   }
 

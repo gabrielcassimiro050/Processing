@@ -5,6 +5,7 @@ float minPlantSize = 3, maxPlantSize = 10;
 float minPlantRange = 100, maxPlantRange = 250;
 float minPlantLife = 50, maxPlantLife = 200;
 float minPlantAge = 50, maxPlantAge = 150;
+float plantMutationFactor = .1;
 float plantCompatibility = 4;
 
 float minOrganismSize = 3, maxOrganismSize = 15;
@@ -26,7 +27,7 @@ int time;
 int maxOrganisms = 1000;
 
 color lightSpectrum = color(255, 0, 255);
-float lightIntolerance = 2;
+float lightIntolerance = 5;
 float fertilityFactor = .01;
 
 float mutationRate = .0001;
@@ -39,6 +40,8 @@ Plant plantSelected;
 float plantLife, plantAge;
 
 boolean focus;
+
+int fps = 1;
 
 float dist(PVector p1, PVector p2) {
   return dist(p1.x, p1.y, p2.x, p2.y);
@@ -149,14 +152,18 @@ void showUmid() {
 }
 
 void showPlantProfile() {
+  noStroke();
   rectMode(CORNER);
   if (plantSelected!=null) {
     //plantSelected = plant.get(indexPlant);
-    
+
     fill(255);
     rect(-width/10.0, -height/10.0, width/3.0, height*2, 10);
     fill(#11343E);
     rect(width/18.0, height/10.0, width/8.0, height/3.3, 10);
+
+    fill(#ff0000);
+    rect(width/18.0, height/45.0, width/48.0, height/20.0, 10);
 
     fill(plantSelected.c);
     ellipse(width/8.5, height/4.0, plantSelected.size*10, plantSelected.size*10);
@@ -168,22 +175,25 @@ void showPlantProfile() {
     text("Range: ", width/18.0, height/1.85);
     text(nf(plantSelected.dna.get("range"), 1, 2)+" --- "+nf(plantSelected.range, 1, 2), width/10.0, height/1.85);
 
-    text("R: ", width/18.0, height/1.60);
-    text(nf(plantSelected.dna.get("r"), 1, 2)+" --- "+red(plantSelected.c), width/10.0, height/1.60);
+    text("R: ", width/18.0, height/1.70);
+    text(nf(plantSelected.dna.get("r"), 1, 2)+" --- "+red(plantSelected.c), width/10.0, height/1.70);
 
-    text("G: ", width/18.0, height/1.50);
-    text(nf(plantSelected.dna.get("g"), 1, 2)+" --- "+green(plantSelected.c), width/10.0, height/1.50);
+    text("G: ", width/18.0, height/1.60);
+    text(nf(plantSelected.dna.get("g"), 1, 2)+" --- "+green(plantSelected.c), width/10.0, height/1.60);
 
-    text("B: ", width/18.0, height/1.40);
-    text(nf(plantSelected.dna.get("b"), 1, 2)+" --- "+blue(plantSelected.c), width/10.0, height/1.40);
-        
+    text("B: ", width/18.0, height/1.50);
+    text(nf(plantSelected.dna.get("b"), 1, 2)+" --- "+blue(plantSelected.c), width/10.0, height/1.50);
+
+    text("Generation: ", width/18.0, height/1.40);
+    text(plantSelected.generation, width/8.0, height/1.40);
+
     text("Age: ", width/18.0, height/1.30);
     text(nf(plantAge, 1, 2), width/10.0, height/1.30);
-    
+
     text("Age Expected: ", width/18.0, height/1.25);
     text(nf(map(plantSelected.dna.get("size"), 0, 1, minPlantAge, maxPlantAge), 1, 2), width/7.0, height/1.25);
-    
-    
+
+
 
     fill(plantSelected.c);
     rect(width/18.0, height/1.2, width/8.0*(plantLife/map(plantSelected.dna.get("size"), 0, 1, minPlantLife, maxPlantLife)), height/3.3, 10);
@@ -223,8 +233,14 @@ void keyReleased() {
     //indexOrganism = floor(random(organisms.size()));
     focus = true;
     break;
+  case '-':
+    fps = constrain(fps+10, 1, 10000);
+    break;
+  case '=':
+    fps = constrain(fps-10, 1, 10000);
+    break;
   }
-
+  println(fps);
   if (keyCode == ENTER) {
     setup();
   }
@@ -253,36 +269,37 @@ void setup() {
 }
 
 void draw() {
-  background(#11343E);
+  if (time%fps==0) {
+    background(#11343E);
 
-  if (tempIsOpen) showTemp();
-  if (umidIsOpen) showUmid();
+    if (tempIsOpen) showTemp();
+    if (umidIsOpen) showUmid();
 
-  showOrganisms();
-  updateOrganisms();
-  showplant();
-  updateplant();
+    showOrganisms();
+    updateOrganisms();
+    showplant();
+    updateplant();
 
-  //if (time%100==0) growplant();
-  surface.setTitle("Organismos: "+organisms.size()+" --- Plantas: "+plant.size());
+    //if (time%100==0) growplant();
+    surface.setTitle("Organismos: "+organisms.size()+" --- Plantas: "+plant.size());
 
-  if (time%1==0) {
-    populationData.add(organisms.size());
-    plantData.add(plant.size());
+    if (time%1==0) {
+      populationData.add(organisms.size());
+      plantData.add(plant.size());
+    }
+
+    if (organisms.size()+plant.size()<=1) setup();
+
+    if (time%100 == 0) {
+      tempSeed += random(-.1, .1);
+      umidSeed += random(-.1, .1);
+      setAmbient();
+    }
+
+    showPlantProfile();
+
+    //delay(delay);
+    if (menuIsOpen) showGraph();
   }
-
-  if (organisms.size()+plant.size()<=1) setup();
-
-  if (time%100 == 0) {
-    tempSeed += random(-.1, .1);
-    umidSeed += random(-.1, .1);
-    setAmbient();
-  }
-
-  showPlantProfile();
-
-
-
-  if (menuIsOpen) showGraph();
   ++time;
 }
